@@ -1,0 +1,947 @@
+---
+title: "Supplementary material"
+format: html
+editor: visual
+---
+
+# Import packages
+
+```{r}
+library(tidyverse)
+library(scales)
+library(ggforce)
+library(grid)
+library(corrplot)
+library(patchwork)
+library(RColorBrewer)
+library(kableExtra)
+library(expss)
+library(ggcorrplot)
+library(viridis)
+library(hrbrthemes)
+library(ggthemes)
+library(showtext)
+library(cowplot)
+```
+
+```{r}
+# Load Google fonts
+font_add_google("Bitter", "bit")                   # Add 'Bitter' font and assign it alias 'bit'
+font_add_google("Roboto Condensed", "robotocondensed")  # Add 'Roboto Condensed' font and assign it alias 'robotocondensed'
+showtext_auto()  # Automatically use 'showtext' for text rendering
+```
+
+Leasure et al. Population changes across Ukrainian oblasts, 2020 and 25 June 2022. The maps arefor illustration purposes only. The boundaries and names shown and the designations used onthis map do not imply official endorsement or acceptance by the International Organization forMigration Comparison of estimates Leasure/IOM/Ours
+
+# Datasets
+
+## National-Regions-Oblasts
+
+```{r}
+# Full list of Ukrainian oblasts
+ukrainian_oblasts <- data.frame(
+  oblast = c("Kiev", "Kiev City", "L'viv", "Kharkiv", "Odessa", "Donets'k", "Dnipropetrovs'k", "Chernihiv", "Zhytomyr", "Zaporizhia", "Vinnytsya", "Luhans'k", "Mykolayiv", "Kherson", "Ivano-Frankivs'k", "Zakarpattia", "Chernivtsi", "Ternopil'", "Sumy", "Rivne", "Volyn", "Kirovohrad", "Poltava", "Cherkasy", "Crimea", "Khmel'nyts'kyy"))
+
+# Create a new column 'region' based on the oblast classification
+ukrainian_oblasts$region <- with(ukrainian_oblasts, 
+                                 ifelse(oblast %in% c("Kiev City"), "Kiev", #Checked
+                                 ifelse(oblast %in% c("Kharkiv", "Donets'k", "Luhans'k", "Dnipropetrovs'k", "Zaporizhia"), "East",
+                                 ifelse(oblast %in% c("Odessa", "Mykolayiv", "Kherson"), "South", # checked
+                                 ifelse(oblast %in% c("L'viv", "Ivano-Frankivs'k", "Zakarpattia", "Chernivtsi", "Ternopil'", "Khmel'nyts'kyy", "Rivne", "Volyn"), "West", # checked
+                                 ifelse(oblast %in% c("Chernihiv", "Sumy", "Zhytomyr", "Kiev"), "North",
+                                 ifelse(oblast %in% c("Crimea"), "Crimea",# Checked
+                                 ifelse(oblast %in% c("Vinnytsya", "Kirovohrad", "Poltava", "Cherkasy"), "Centre", NA)))))))) # checked
+# EP double checked list 15.08.2024
+
+# Filter dataframe to show only rows where region is NA
+#na_oblasts <- ukrainian_oblasts %>% filter(is.na(region))
+
+# View the result
+#print(na_oblasts)
+```
+
+## Population changes our data
+
+```{r}
+oblasts_gps <- read.csv("../code/data/oblasts.csv") 
+
+oblasts_gps_bis <- oblasts_gps %>%
+  rename(oblast = NAME_1)
+
+# Merge ukrainian_oblasts with oblasts_gps on the 'oblast' variable
+oblasts_gps_bis <- left_join(oblasts_gps_bis, ukrainian_oblasts, by = "oblast")
+
+###############
+# National
+
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+adjusted_pop_sizes_for_oblasts_1 <- oblasts_gps_bis %>%
+  filter(net_pop_change < 0) %>%
+  arrange(oblast, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+adjusted_pop_sizes_for_oblasts_2 <- adjusted_pop_sizes_for_oblasts_1 %>%
+  group_by(month, day) %>%
+  summarise(total_pop_declines = sum(net_pop_change, na.rm = TRUE), .groups = "drop") %>%
+  arrange(month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+adjusted_pop_sizes_for_oblasts_2$month <- factor(
+  adjusted_pop_sizes_for_oblasts_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July", "August"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly <- adjusted_pop_sizes_for_oblasts_2 %>%
+  group_by(month) %>%
+  summarise(total_pop_declines_month_gps = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") # need to use median & make positive
+
+###############
+# Sub-national
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+adjusted_pop_sizes_for_oblasts_1 <- oblasts_gps_bis %>%
+  filter(net_pop_change < 0) %>%
+  arrange(oblast, region, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+adjusted_pop_sizes_for_oblasts_2 <- adjusted_pop_sizes_for_oblasts_1 %>%
+  group_by(region, month, day) %>%
+  summarise(total_pop_declines = sum(net_pop_change, na.rm = TRUE), .groups = "drop") %>%
+  arrange(region, month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+adjusted_pop_sizes_for_oblasts_2$month <- factor(
+  adjusted_pop_sizes_for_oblasts_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July", "August"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_region <- adjusted_pop_sizes_for_oblasts_2 %>%
+  group_by(region, month) %>%
+  summarise(total_pop_declines_month_gps = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(total_pop_declines_month_gps = round(total_pop_declines_month_gps, -3)) # need to use median & make positive
+
+
+###############
+# Oblast
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+adjusted_pop_sizes_for_oblasts_1 <- oblasts_gps_bis %>%
+  filter(net_pop_change < 0) %>%
+  arrange(oblast, region, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+adjusted_pop_sizes_for_oblasts_2 <- adjusted_pop_sizes_for_oblasts_1 %>%
+  group_by(oblast, month, day) %>%
+  summarise(total_pop_declines = sum(net_pop_change, na.rm = TRUE), .groups = "drop") %>%
+  arrange(oblast, month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+adjusted_pop_sizes_for_oblasts_2$month <- factor(
+  adjusted_pop_sizes_for_oblasts_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July", "August"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_oblast <- adjusted_pop_sizes_for_oblasts_2 %>%
+  group_by(oblast, month) %>%
+  summarise(total_pop_declines_month_gps = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(total_pop_declines_month_gps = round(total_pop_declines_month_gps, -3)) # need to use median & make positive
+
+
+```
+
+## Population changes our data no Crimea
+
+```{r}
+oblasts_gps_nocrimea <- read.csv("../code/data/no_crimea_oblasts_disp.csv") 
+
+oblasts_gps_nocrimea <- oblasts_gps_nocrimea %>%
+  rename(oblast = NAME_1)
+
+# Merge ukrainian_oblasts with oblasts_gps on the 'oblast' variable
+oblasts_gps_nocrimea <- left_join(oblasts_gps_nocrimea, ukrainian_oblasts, by = "oblast")
+
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+adjusted_pop_sizes_for_oblasts_nocrimea_1 <- oblasts_gps_nocrimea %>%
+  filter(net_pop_change < 0) %>%
+  arrange(oblast, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+adjusted_pop_sizes_for_oblasts_nocrimea_2 <- adjusted_pop_sizes_for_oblasts_nocrimea_1 %>%
+  group_by(month, day) %>%
+  summarise(total_pop_declines = sum(net_pop_change, na.rm = TRUE), .groups = "drop") %>%
+  arrange(month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+adjusted_pop_sizes_for_oblasts_nocrimea_2$month <- factor(
+  adjusted_pop_sizes_for_oblasts_nocrimea_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July", "August"
+  )
+)
+
+# Median population declines by month
+pop_decline_nocrimea_monthly <- adjusted_pop_sizes_for_oblasts_nocrimea_2 %>%
+  group_by(month) %>%
+  summarise(total_pop_declines_month_gps_cri = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(total_pop_declines_month_gps_cri = round(total_pop_declines_month_gps_cri, -3)) # need to use median & make positive
+
+###############
+# Sub-national
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+adjusted_pop_sizes_for_oblasts_1 <- oblasts_gps_nocrimea %>%
+  filter(net_pop_change < 0) %>%
+  arrange(oblast, region, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+adjusted_pop_sizes_for_oblasts_2 <- adjusted_pop_sizes_for_oblasts_1 %>%
+  group_by(region, month, day) %>%
+  summarise(total_pop_declines = sum(net_pop_change, na.rm = TRUE), .groups = "drop") %>%
+  arrange(region, month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+adjusted_pop_sizes_for_oblasts_2$month <- factor(
+  adjusted_pop_sizes_for_oblasts_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July", "August"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_no_crimea_region <- adjusted_pop_sizes_for_oblasts_2 %>%
+  group_by(region, month) %>%
+  summarise(total_pop_declines_month_gps_cri = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(total_pop_declines_month_gps_cri = round(total_pop_declines_month_gps_cri, -3)) # need to use median & make positive
+
+###############
+# Oblast
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+adjusted_pop_sizes_for_oblasts_1 <- oblasts_gps_nocrimea %>%
+  filter(net_pop_change < 0) %>%
+  arrange(oblast, region, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+adjusted_pop_sizes_for_oblasts_2 <- adjusted_pop_sizes_for_oblasts_1 %>%
+  group_by(oblast, month, day) %>%
+  summarise(total_pop_declines = sum(net_pop_change, na.rm = TRUE), .groups = "drop") %>%
+  arrange(oblast, month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+adjusted_pop_sizes_for_oblasts_2$month <- factor(
+  adjusted_pop_sizes_for_oblasts_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July", "August"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_no_crimea_oblast <- adjusted_pop_sizes_for_oblasts_2 %>%
+  group_by(oblast, month) %>%
+  summarise(total_pop_declines_month_gps_cri = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(total_pop_declines_month_gps_cri = round(total_pop_declines_month_gps_cri, -3)) # need to use median & make positive
+
+
+```
+
+## Population changes IOM
+
+https://data.humdata.org/dataset/ukraine-idp-estimates?#:\~:text=IOM%20estimates%20that%203%2C548%2C000%20de,from%20Donetska%20Oblast%20(22%25).
+
+```{r}
+#pop_decline_monthly_IOM <- data.frame(
+#  month = c("February", "March", "April", "May", "June", "July", "August"),
+#  total_pop_declines_month_iom = format(c(NA, 6478000, 7423000, 7581500, 6275000, 6645000, 6975000)))
+
+# pop_decline_monthly_IOM <- data.frame(
+#   month = c("March", "March", "March", "March", "March", "March", "March",
+#            "April", "April", "April", "April", "April", "April", "April",
+ #           "May", "May", "May", "May", "May", "May", "May",
+  #          "June", "June", "June", "June", "June", "June", "June",
+   #         "July", "July", "July", "July", "July", "July", "July",
+    #        "August", "August", "August", "August", "August", "August", "August"),
+#   region = c("Kiev", "East", "South", "Centre", "North", "West", "National",
+     #        "Kiev", "East", "South", "Centre", "North", "West", "National",
+      #       "Kiev", "East", "South", "Centre", "North", "West", "National",
+       #      "Kiev", "East", "South", "Centre", "North", "West", "National",
+        #     "Kiev", "East", "South", "Centre", "North", "West", "National",
+         #    "Kiev", "East", "South", "Centre", "North", "West", "National"),
+#   total_pop_declines_month_iom = c(1936839, 2344936, 485829, 220243, 1302022, 187854, 6477723,
+#                                    1924166, 2915458, 585384, 99179, 1714591, 184081, # 7422858,
+  #                                  1389000, 3925500, 900500, 97500, 1106500, 162500, # 7581500,
+    #                                669000, 3838000, 690000, 43000, 949000, 86000, 6275000,
+   #                                 561000, 4445000, 1143000, 43000, 388000, 65000, 6645000,
+   #                                 715000, 4245000, 1408000, 87000, 498000, 22000, 6975000)
+# )
+
+pop_decline_monthly_IOM <- data.frame(
+  oblast = rep(c("Vinnytsya", "Volyn", "Dnipropetrovs'k", "Donets'k", "Zhytomyr",
+                 "Zakarpattia", "Zaporizhia", "Ivano-Frankivs'k", "Kiev", "Kirovohrad",
+                 "L'viv", "Mykolayiv", "Odessa", "Poltava", "Rivne", "Sumy",
+                 "Ternopil'", "Kharkiv", "Kherson", "Khmel'nyts'kyy",
+                 "Cherkasy", "Chernivtsi", "Chernihiv", "Kiev City"), each = 5),
+  month = rep(c("April", "May", "June", "July", "August"), times = 24),
+  total_pop_declines_month_iom = c(
+    547243, 411994, 366581, 322573, 345511,
+    250820, 173471, 215636, 86019, 86378,
+    820864, 823988, 1013488, 967718, 712616,
+    45604, 86736, 86254, 43010, 129567,
+    228018, 216839, 64691, 236553, 194350,
+    410432, 303574, 237199, 107524, 151161,
+    205216, 281891, 215636, 258058, 453483,
+    387630, 130103, 194072, 193544, 215944,
+    729657, 910723, 388144, 688155, 691022,
+    205216, 303574, 215636, 172039, 323916,
+    706855, 607149, 345017, 322573, 453483,
+    45604, 216839, 172509, 322573, 302322,
+    159612, 303574, 150945, 344078, 345511,
+    547243, 498729, 560653, 473107, 280728,
+    136811, 43368, 64691, 129029, 129567,
+    114009, 173471, 86254, 107524, 151161,
+    410432, 108419, 194072, 107524, 323916,
+    387630, 585465, 539089, 666650, 647833,
+    22802, 43368, 0, 0, 21594,
+    364828, 281891, 194072, 193544, 215944,
+    501639, 216839, 280326, 150534, 86378,
+    182414, 195155, 129381, 193544, 151161,
+    182414, 21684, 129381, 86019, 151161,
+    114009, 195155, 431271, 473107, 410294
+  )
+)
+
+pop_decline_monthly_IOM$total_pop_declines_month_iom <- as.numeric(pop_decline_monthly_IOM$total_pop_declines_month_iom)
+
+# Create a dataframe with only "National" rows
+#national_data_IOM <- pop_decline_monthly_IOM %>%
+#  filter(region == "National")
+
+# Create another dataframe that drops "National" rows
+#regional_data_IOM <- pop_decline_monthly_IOM %>%
+#  filter(region != "National")
+```
+
+## Population changes Leasure et al.
+
+Link with data is here: https://osf.io/ckm8e
+
+```{r}
+# Set the directory containing the date folders
+base_directory <- "../code/data/Leasure_supplement/results/"
+
+# Get a list of all folders sorted by date
+folders <- list.dirs(base_directory, full.names = TRUE, recursive = FALSE)
+folders <- sort(folders)
+
+# Initialize an empty data frame to store the combined data
+combined_data <- data.frame()
+
+# Loop through each folder and read the population_change.csv file
+for (folder in folders) {
+  # Construct the file path
+  file_path <- file.path(folder, "population_change.csv")
+  
+  # Read the CSV file
+  data <- read.csv(file_path)
+  
+  # Append the data to the combined_data data frame
+  combined_data <- bind_rows(combined_data, data)
+}
+
+# Drop rows where the 'date' column is NA
+combined_data <- combined_data %>%
+  filter(!is.na(date))
+
+# Ensure the date column is in Date format
+combined_data$date <- as.Date(combined_data$date, format = "%Y-%m-%d")
+
+# Extract the month and day from the date column
+combined_data$month <- format(combined_data$date, "%m")
+combined_data$day <- format(combined_data$date, "%d")
+
+combined_data_n <- combined_data %>%
+  mutate(oblast = case_when(
+    name %in% c("Chernihiv Oblast") ~ "Chernihiv",
+    name %in% c("Cherkasy Oblast") ~ "Cherkasy",
+    name %in% c("Chernivtsi Oblast") ~ "Chernivtsi",
+    name %in% c("Dnipropetrovsk Oblast") ~ "Dnipropetrovs'k",
+    name %in% c("Donetsk Oblast") ~ "Donets'k",
+    name %in% c("Ivano-Frankivsk Oblast") ~ "Ivano-Frankivs'k",
+    name %in% c("Kharkiv Oblast") ~ "Kharkiv",
+    name %in% c("Kherson Oblast") ~ "Kherson",
+    name %in% c("Kirovohrad Oblast") ~ "Kirovohrad",
+    name %in% c("Khmelnytskyi Oblast") ~ "Khmel'nyts'kyy",
+    name %in% c("Luhansk Oblast") ~ "Luhans'k",
+    name %in% c("Lviv Oblast") ~ "L'viv",
+    name %in% c("Mykolaiv Oblast") ~ "Mykolayiv",
+    name %in% c("Odessa Oblast") ~ "Odessa",
+    name %in% c("Poltava Oblast") ~ "Poltava",
+    name %in% c("Rivne Oblast") ~ "Rivne",
+    name %in% c("Sumy Oblast") ~ "Sumy",
+    name %in% c("Ternopil Oblast") ~ "Ternopil'",
+    name %in% c("Vinnytsia Oblast") ~ "Vinnytsya",
+    name %in% c("Volyn Oblast") ~ "Volyn",
+    name %in% c("Zakarpattia Oblast") ~ "Zakarpattia",
+    name %in% c("Zaporizhia Oblast") ~ "Zaporizhia",
+    name %in% c("Zhytomyr Oblast") ~ "Zhytomyr",
+    name %in% c("Kyiv Oblast") ~ "Kiev",
+    name %in% c("Kyiv") ~ "Kiev City",
+    TRUE ~ name
+  ))
+
+# Merge ukrainian_oblasts with oblasts_gps on the 'oblast' variable
+combined_data_n <- left_join(combined_data_n, ukrainian_oblasts, by = "oblast")
+
+######################
+# National
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+combined_data_doug <- combined_data_n %>%
+  filter(total < 0) %>%
+  arrange(oblast, month, date)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+combined_data_doug_2 <- combined_data_doug %>%
+  group_by(month, day) %>%
+  summarise(total_pop_declines = sum(total, na.rm = TRUE), .groups = "drop") %>%
+  arrange(month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+combined_data_doug_2$month <- factor(
+  combined_data_doug_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_doug <- combined_data_doug_2 %>%
+  group_by(month) %>%
+  summarise(total_pop_declines_month_doug = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") # need to use median & make positive
+
+
+###############
+# Sub-national
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+combined_data_doug <- combined_data_n %>%
+  filter(total < 0) %>%
+  arrange(oblast, region, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+combined_data_doug_2 <- combined_data_doug %>%
+  group_by(region, month, day) %>%
+  summarise(total_pop_declines = sum(total, na.rm = TRUE), .groups = "drop") %>%
+  arrange(region, month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+combined_data_doug_2$month <- factor(
+  combined_data_doug_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_region_doug <- combined_data_doug_2 %>%
+  group_by(region, month) %>%
+  summarise(total_pop_declines_month_doug = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(total_pop_declines_month_doug = round(total_pop_declines_month_doug, -3)) # need to use median & make positive
+
+
+###############
+# Oblast
+# Filter, arrange, and summarize data for oblasts to calculate total population declines
+combined_data_doug <- combined_data_n %>%
+  filter(total < 0) %>%
+  arrange(oblast, region, month, day)
+
+# Data needs to be in month-day-total_pop_decline format to summarise by month for total nation
+combined_data_doug_2 <- combined_data_doug %>%
+  group_by(oblast, month, day) %>%
+  summarise(total_pop_declines = sum(total, na.rm = TRUE), .groups = "drop") %>%
+  arrange(oblast, month, day) %>%
+  collect() # Collect data from Spark DataFrame to R data.frame
+
+# Convert numeric month to month names
+combined_data_doug_2$month <- factor(
+  combined_data_doug_2$month,
+  labels = c(
+    "February", "March", "April", "May", "June",
+    "July"
+  )
+)
+
+# Median population declines by month
+pop_decline_monthly_oblast_doug <- combined_data_doug_2 %>%
+  group_by(oblast, month) %>%
+  summarise(total_pop_declines_month_doug = abs(median(total_pop_declines, na.rm = TRUE)), .groups = "drop")%>%
+  mutate(total_pop_declines_month_doug = round(total_pop_declines_month_doug, -3)) # need to use median & make positive
+
+
+```
+
+## Link all datasets together - NATIONAL
+
+```{r}
+table_all_df <- pop_decline_monthly %>%
+  left_join(pop_decline_nocrimea_monthly, by = "month") %>%
+  left_join(national_data_IOM, by = "month") %>%
+  left_join(pop_decline_monthly_doug, by = "month") 
+
+
+final_df <- table_all_df %>%
+  rename(
+    "GPS" = total_pop_declines_month_gps,
+    "GPS excluding Crimea" = total_pop_declines_month_gps_cri,
+    "IOM" = total_pop_declines_month_iom,
+    "FB (Leasure et al.)" = total_pop_declines_month_doug,
+    "Month" = month
+  ) %>% 
+  mutate(across(where(is.numeric), ~ comma(.))) %>%
+  select(-region)
+
+export_table <- table_all_df %>%
+  rename(
+    "GPS" = total_pop_declines_month_gps,
+    "GPS (No  Crimea)" = total_pop_declines_month_gps_cri,
+    "IOM" = total_pop_declines_month_iom,
+    "FB" = total_pop_declines_month_doug,
+    "Month" = month
+  ) %>% 
+  mutate(across(everything(), ~ as.numeric(.))) %>%
+  select(-region) %>%
+  select(-Month)
+
+```
+
+Save Table National
+
+```{r}
+population_table <- kable(
+  final_df, 
+  format = "html",
+  align = "c"
+) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+ save_kable(population_table, "../manuscript/tables/table_all_estimates.png")
+
+```
+
+## Link all datasets together - SUBNATIONAL
+
+```{r}
+table_all_df_region <- pop_decline_monthly_region %>%
+  left_join(pop_decline_monthly_no_crimea_region, by = c("month", "region")) %>%
+  left_join(regional_data_IOM, by = c("month", "region")) %>%
+  left_join(pop_decline_monthly_region_doug, by = c("month", "region"))
+  
+export_table_region <- table_all_df_region %>%
+  rename(
+    "GPS" = total_pop_declines_month_gps,
+    "GPS (no Crimea)" = total_pop_declines_month_gps_cri,
+    "IOM" = total_pop_declines_month_iom,
+    "FB" = total_pop_declines_month_doug,
+    "Month" = month
+  ) %>% 
+  mutate(across(everything(), ~ as.numeric(.))) %>%
+ # drop_na() %>%            # Drop rows with any NAs
+  select(-region) %>%
+  select(-Month)
+
+###
+table_all_df_region_names <- table_all_df_region %>%
+  filter(region != "Crimea") %>%
+  select(-total_pop_declines_month_gps_cri) %>%
+  rename(
+    "GPS" = total_pop_declines_month_gps,
+    "IOM" = total_pop_declines_month_iom,
+    "FB" = total_pop_declines_month_doug
+  ) 
+
+# Define the correct order for months
+month_order <- c("February", "March", "April", "May", "June", "July", "August")
+
+# Process the data
+long_df <- table_all_df_region_names %>%
+  gather(key = "estimate_type", value = "estimate_value", -month, -region) %>%
+  mutate(estimate_value = round(estimate_value / 1e6, 1),  # Convert to millions and round to 1 decimal place
+         month = factor(month, levels = month_order))  # Ensure month is a factor with the correct order
+
+# Create the ggplot bar chart
+plot_macro_region <- ggplot(long_df, aes(x = month, y = estimate_value, color = estimate_type, group = estimate_type)) +
+  geom_line(size = 2) +
+  facet_wrap(~ region) + 
+  theme_tufte() +
+  scale_color_viridis(discrete = TRUE, option = "E") +
+  scale_fill_viridis(discrete = TRUE, option = "E") +
+  labs(title = "",
+       x = "Month",
+       y = "IDP (millions)",
+       color = "Estimate source",
+       fill = "Estimate source") + 
+     scale_y_continuous(
+      labels = label_number(scale_cut = cut_si(unit = ""))  # Format y-axis labels with "M" for millions
+    ) +
+  theme( text = element_text(family = "robotocondensed", size = 25),
+         axis.text.x = element_text(angle = 45, hjust = 1, size = 25),
+         axis.text.y = element_text(size = 25),  # Customize y-axis text size
+         axis.title = element_text(size = 34, face = "bold"),  # Customize axis title
+         legend.position = "bottom",
+         legend.key.width = unit(1, "cm"),  # Set legend key width
+         legend.key.height = unit(2.5, "cm"),  # Set legend key height
+         legend.text = element_text(size = 25)  # Customize legend text size
+    )
+
+plot_macro_region
+
+#ggsave("../manuscript/figures/SM/plot_macro_region.png", plot)
+png(filename = "../outputs/sm/plot_macro_region.png", units="in", width=14, height=10, res=300, bg = "transparent")
+  last_plot()
+dev.off()
+
+```
+
+## Link all datasets together - OBLAST
+
+```{r}
+table_all_df_oblast <- pop_decline_monthly_oblast %>%
+  left_join(pop_decline_monthly_no_crimea_oblast, by = c("month", "oblast")) %>%
+  left_join(pop_decline_monthly_IOM, by = c("month", "oblast")) %>%
+  left_join(pop_decline_monthly_oblast_doug , by = c("month", "oblast"))
+  
+export_table_oblast <- table_all_df_oblast %>%
+  rename(
+    "GPS" = total_pop_declines_month_gps,
+    "GPS (no Crimea)" = total_pop_declines_month_gps_cri,
+    "IOM" = total_pop_declines_month_iom,
+    "FB" = total_pop_declines_month_doug,
+    "Month" = month
+  ) %>% 
+  mutate(across(everything(), ~ as.numeric(.))) %>%
+  mutate(IOM = NA) %>%
+ # drop_na() %>%            # Drop rows with any NAs
+  select(-oblast) %>%
+  select(-Month)
+
+###
+table_all_df_oblast_names <- table_all_df_oblast %>%
+  filter(oblast != "Crimea") %>%
+  select(-total_pop_declines_month_gps_cri) %>%
+  rename(
+    "GPS" = total_pop_declines_month_gps,
+    "FB" = total_pop_declines_month_doug,
+    "IOM" = total_pop_declines_month_iom
+  ) 
+
+# Define the correct order for months
+month_order <- c("February", "March", "April", "May", "June", "July", "August")
+
+# Process the data
+long_df_oblast <- table_all_df_oblast_names %>%
+  gather(key = "estimate_type", value = "estimate_value", -month, -oblast) %>%
+  mutate(estimate_value = round(estimate_value / 1e6, 1),  # Convert to millions and round to 1 decimal place
+         month = factor(month, levels = month_order))  # Ensure month is a factor with the correct order
+
+# Create the ggplot bar chart
+plot_oblast <- ggplot(long_df_oblast, aes(x = month, y = estimate_value, color = estimate_type, group = estimate_type)) +
+  geom_line(linewidth = 2) +
+  facet_wrap(~ oblast) + 
+  theme_tufte() +
+  scale_color_viridis(discrete = TRUE, option = "E") +
+  scale_fill_viridis(discrete = TRUE, option = "E") +
+  labs(title = "",
+       x = "Month",
+       y = "IDP (millions)",
+       color = "Estimate source",
+       fill = "Estimate source") + 
+  theme( text = element_text(family = "robotocondensed", size = 25),
+         axis.text.x = element_text(angle = 45, hjust = 1, size = 16),
+         axis.text.y = element_text(size = 16),  # Customize y-axis text size
+         axis.title = element_text(size = 30, face = "bold"),  # Customize axis title
+         legend.position = "bottom",
+         legend.key.width = unit(1, "cm"),  # Set legend key width
+         legend.key.height = unit(2.5, "cm"),  # Set legend key height
+         legend.text = element_text(size = 25)  # Customize legend text size
+    )
+
+plot_oblast
+
+#ggsave("../manuscript/figures/SM/plot_oblast.png", plot)
+
+png(filename = "../outputs/sm/plot_oblast_test.png", units="in", width=14, height=10, res=300, bg = "transparent")
+  last_plot()
+dev.off()
+```
+
+## Correlation National
+
+http://www.sthda.com/english/wiki/ggcorrplot-visualization-of-a-correlation-matrix-using-ggplot2
+
+```{r}
+theme_plot_tufte <- function(...) {
+  theme_tufte() +
+    theme(
+      text = element_text(family = "robotocondensed")
+    ) +
+    theme(plot.title = element_text(size = 20, face = "bold"),
+          axis.text.y = element_text(size = 14),
+          axis.text.x = element_text(size = 14),
+          axis.title = element_text(size=14),
+          legend.title = element_text(size=13),
+          legend.text = element_text(size=13)
+    )
+}
+```
+
+```{r}
+# Calculate the correlation matrix while ignoring NAs
+cor_matrix_pearson <- cor(export_table, use = "pairwise.complete.obs")
+
+# Compute a matrix of correlation p-values
+p.mat <- cor_pmat(export_table)
+
+# ggcorrplot
+corr_national1 <- ggcorrplot(cor_matrix_pearson, 
+                             method = "square", 
+                             hc.order = FALSE, 
+                             type = "lower",
+                             outline.col = "white", 
+                             lab = TRUE,            # Add this line to display point estimates
+                             lab_size = 4.5,
+                             lab_col = "white",
+                             colors = c("#2c569c", "white", "#a5234e"),
+                             title = "National",
+                             show.legend = FALSE,
+                             ggtheme = theme_plot_tufte)
+
+corr_national1
+
+# Calculate the correlation matrix while ignoring NAs
+cor_matrix_spearmen <- cor(export_table, use = "pairwise.complete.obs", method = "spearman")
+
+# ggcorrplot
+corr_national2 <- ggcorrplot(cor_matrix_spearmen, 
+                             #method = "circle", 
+                             hc.order = FALSE, 
+                             type = "lower",
+                             outline.col = "white", 
+                             lab = TRUE,            # Add this line to display point estimates
+                             lab_size = 4.5,
+                             lab_col = "white",
+                             colors = c("#2c569c", "white", "#a5234e"),
+                             title = "National",
+                             show.legend = FALSE,
+                             ggtheme = theme_plot_tufte)
+corr_national2
+
+#col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+#corrplot(cor_matrix, method="color", col=col(200),  
+#        type="upper", order="hclust", 
+#       addCoef.col = "black", # Add coefficient of correlation
+#      tl.col="black", tl.srt=45, #Text label color and rotation
+         # Combine with significance
+         #p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+#     diag=FALSE 
+#    )
+
+```
+
+## Correlation Subnational
+
+```{r}
+# Calculate the correlation matrix while ignoring NAs
+cor_matrix_region_pearson <- cor(export_table_region, use = "pairwise.complete.obs")
+
+# Compute a matrix of correlation p-values
+p.mat <- cor_pmat(export_table)
+
+# ggcorrplot
+corr_regional1 <- ggcorrplot(cor_matrix_region_pearson, 
+                             #method = "circle", 
+                             hc.order = FALSE, 
+                             type = "lower",
+                             outline.col = "white", 
+                             lab = TRUE,            # Add this line to display point estimates
+                             lab_size = 4.5,
+                             lab_col = "white",
+                             colors = c("#2c569c", "white", "#a5234e"),
+                             title = "Regional",
+                             show.legend = FALSE,
+                             ggtheme = theme_plot_tufte)
+
+corr_regional1
+
+# Calculate the correlation matrix while ignoring NAs
+cor_matrix_region_spearmen <- cor(export_table_region, use = "pairwise.complete.obs", method = "spearman")
+
+# ggcorrplot
+corr_regional2 <- ggcorrplot(cor_matrix_region_spearmen, 
+                             #method = "circle", 
+                             hc.order = FALSE, 
+                             type = "lower",
+                             outline.col = "white", 
+                             lab = TRUE,            # Add this line to display point estimates
+                             lab_size = 4.5,
+                             lab_col = "white",
+                             colors = c("#2c569c", "white", "#a5234e"),
+                             title = "Regional",
+                             show.legend = FALSE,
+                             ggtheme = theme_plot_tufte)
+
+corr_regional2
+
+
+```
+
+## Correlation Oblast
+
+```{r}
+# Calculate the correlation matrix while ignoring NAs
+cor_matrix_oblast_pearson <- cor(export_table_oblast, use = "pairwise.complete.obs")
+
+# Compute a matrix of correlation p-values
+p.mat <- cor_pmat(export_table)
+
+
+corr_oblast1 <- ggcorrplot(cor_matrix_oblast_pearson, 
+                             #method = "circle", 
+                             hc.order = FALSE, 
+                             type = "lower",
+                             outline.col = "white", 
+                             lab = TRUE,            # Add this line to display point estimates
+                             lab_size = 4.5,
+                             lab_col = "white",
+                             colors = c("#2c569c", "white", "#a5234e"),
+                             title = "Oblast",
+                             legend.title = "Correlation",
+                             ggtheme = theme_plot_tufte)
+
+corr_oblast1
+
+# Calculate the correlation matrix while ignoring NAs
+cor_matrix_oblast_spearman <- cor(export_table_oblast, use = "pairwise.complete.obs", method = "spearman")
+
+# Compute a matrix of correlation p-values
+p.mat <- cor_pmat(export_table)
+
+
+corr_oblast2 <- ggcorrplot(cor_matrix_oblast_spearman, 
+                             #method = "circle", 
+                             hc.order = FALSE, 
+                             type = "lower",
+                             outline.col = "white", 
+                             lab = TRUE,            # Add this line to display point estimates
+                             lab_size = 4.5,
+                             lab_col = "white",
+                             colors = c("#2c569c", "white", "#a5234e"),
+                             title = "Oblast",
+                           legend.title = "Correlation",
+                             ggtheme = theme_plot_tufte)
+
+corr_oblast2
+
+```
+
+## Export correlations Pearsons
+
+```{r}
+
+png(filename = "../outputs/sm/correlations_pearson.png", units="in", width=14, height=10, res=300, bg = "transparent")
+  (corr_national1 + corr_regional1 + corr_oblast1)
+dev.off()
+
+png(filename = "../outputs/sm/correlations_spearman.png", units="in", width=14, height=10, res=300, bg = "transparent")
+    (corr_national2 + corr_regional2 + corr_oblast2)
+dev.off()
+```
+
+```{r}
+
+# Assuming corr_national2, corr_regional2, and corr_oblast2 are ggplot objects
+# Extract the legend from one of the plots (all plots should have the same legend)
+legend <- get_legend(corr_national2 + theme(legend.position = "bottom"))
+
+# Combine the plots into a single row with increased width
+combined_plot <- plot_grid(
+  corr_national1 + theme(legend.position = "none"),
+  corr_regional1 + theme(legend.position = "none"),
+  corr_oblast1 + theme(legend.position = "none"),
+  ncol = 3,
+  align = 'h',
+  rel_widths = c(1.8, 1.8, 1.5)  # Adjust widths to ensure plots are wider
+)
+
+# Combine the row of plots with the legend, and reduce the space allocated to the legend
+final_plot <- plot_grid(
+  combined_plot,
+  legend,
+  ncol = 1,
+  rel_heights = c(0.3, 0.15)  # Adjust the height ratio to bring the legend closer to the plots
+)
+
+print(final_plot)
+
+# Save the plot to a file with specific dimensions to ensure it doesn't look squashed
+ggsave("../outputs/sm/correlations.png", final_plot, width = 15, height = 8, dpi = 300)
+
+# only keep one legend
+```
+
+## Export correlations Spearman
+
+```{r}
+
+# Assuming corr_national2, corr_regional2, and corr_oblast2 are ggplot objects
+# Extract the legend from one of the plots (all plots should have the same legend)
+legend <- get_legend(corr_national2 + theme(legend.position = "bottom"))
+
+# Combine the plots into a single row with increased width
+combined_plot <- plot_grid(
+  corr_national2 + theme(legend.position = "none"),
+  corr_regional2 + theme(legend.position = "none"),
+  corr_oblast2 + theme(legend.position = "none"),
+  ncol = 3,
+  align = 'h',
+  rel_widths = c(1.8, 1.8, 1.5)  # Adjust widths to ensure plots are wider
+)
+
+# Combine the row of plots with the legend, and reduce the space allocated to the legend
+final_plot_spear <- plot_grid(
+  combined_plot,
+  legend,
+  ncol = 1,
+  rel_heights = c(0.3, 0.15)  # Adjust the height ratio to bring the legend closer to the plots
+)
+
+print(final_plot_spear)
+
+# Save the plot to a file with specific dimensions to ensure it doesn't look squashed
+ggsave("../manuscript/figures/SM/correlations_spearman.png", final_plot, width = 15, height = 8, dpi = 300)
+
+# only keep one legend
+```
+
+## Scatterplots

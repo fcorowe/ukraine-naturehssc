@@ -1,0 +1,14 @@
+#ignore all files in directories
+*.DS_Store
+.Rproj.user
+*.Rhistory
+.tmp
+.DS_Store
+*.Rproj
+*.shp
+
+## folders
+/guideline
+superseded/
+data/
+gadm41_UKR_shp/
