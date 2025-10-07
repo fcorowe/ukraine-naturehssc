@@ -107,7 +107,7 @@ oblasts_bar <- ggplot(adjusted_pop_sizes_for_oblasts_2,
 
 oblasts_bar
 
-ggsave("../manuscript/figures/2_1/oblasts.jpg", width = 8, height = 4)
+# ggsave("../manuscript/figures/2_1/oblasts.jpg", width = 8, height = 4)
 
 
 # Filter, arrange, and summarize data for raions to calculate total population declines
@@ -169,12 +169,12 @@ raions_bar <- ggplot(adjusted_pop_sizes_for_raions_2,
 
 raions_bar
 
-ggsave("../manuscript/figures/2_1/raions.jpg", width = 8, height = 4)
+# ggsave("../manuscript/figures/2_1/raions.jpg", width = 8, height = 4)
 
 
 oblasts_raions <- grid.arrange(oblasts_bar, raions_bar, ncol = 1)
 
-#ggsave("../manuscript/figures/2_1/oblasts_raions.jpg", oblasts_raions, height = 10)
+## ggsave("../manuscript/figures/2_1/oblasts_raions.jpg", oblasts_raions, height = 10)
 
 
 ggplot(data = adjusted_pop_sizes_for_raions_2) +
@@ -224,4 +224,4 @@ ggplot(data = adjusted_pop_sizes_for_raions_2) +
         legend.position = "right"
   )
 
-ggsave("../manuscript/figures/2_1/fig1.jpg", width = 10, height = 4)
+# ggsave("../manuscript/figures/2_1/fig1.jpg", width = 10, height = 4)

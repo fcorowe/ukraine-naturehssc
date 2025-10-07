@@ -164,6 +164,6 @@ ggplot(adjusted_pop_sizes_for_oblasts_1,
         legend.key.height = unit(2.5, "cm"),
         legend.text = element_text(size = 20))
 
-png("../manuscript/figures/2_2/heat_map_weekly.png", units="in", width=25, height=10, res=300, bg = "transparent")
-  last_plot()
+# png("../manuscript/figures/2_2/heat_map_weekly.png", units="in", width=25, height=10, res=300, bg = "transparent")
+  # last_plot()
 dev.off()

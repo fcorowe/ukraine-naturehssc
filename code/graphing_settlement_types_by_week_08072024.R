@@ -87,6 +87,6 @@ p +
   scale_y_continuous(labels = scales::label_percent(scale = 1), limits = c(0, 100)) 
 
 
-png(filename = "../manuscript/figures/2_2/settlement-areas_boxplot.png", units="in", width=28, height=10, res=300, bg = "transparent")
-  last_plot()
+# png(filename = "../manuscript/figures/2_2/settlement-areas_boxplot.png", units="in", width=28, height=10, res=300, bg = "transparent")
+  # last_plot()
 dev.off()
