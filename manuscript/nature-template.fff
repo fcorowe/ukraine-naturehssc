@@ -1,0 +1,94 @@
+\begin{figure}
+
+\begin{minipage}{\linewidth}
+
+\pandocbounded{\includegraphics[keepaspectratio]{../outputs/2_1/fig1.jpg}}
+
+\end{minipage}%
+
+\caption{\label{fig-popdisplacement}\textbf{Estimated daily number of
+displaced population. February to August 2022.} The number of displaced
+people is estimated as the difference between the population in a region
+for a given day after the start of the war and the population before the
+war in 2020 - see Methods Section. Local polynomial regression modelling
+was used to build 95\% confidence intervals.}
+
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+
+\begin{minipage}{\linewidth}
+
+\includegraphics[width=\linewidth,height=0.8\textheight,keepaspectratio]{../outputs/2_2/fig2-two-partsa.pdf}
+
+\end{minipage}%
+
+\caption{\label{fig-heatmaps}\textbf{Net migration count by oblast and
+raions, February to August 2022.} \textbf{a.} Weekly median net
+migration by oblast. \textbf{b.} Monthly median net migration across
+raions. \textbf{c.} Changes in the share of estimated population across
+the urban-rural hierarchy.}
+
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+
+\begin{minipage}{\linewidth}
+
+\includegraphics[width=\linewidth,height=1\textheight,keepaspectratio]{../outputs/2_2/fig2-two-partsb.pdf}
+
+\end{minipage}%
+
+\caption{\label{fig-heatmaps2}\textbf{Top ten raions with the largest
+cumulative net negative (in blue) and positive (in red) migration
+balance organised from the largest to the smallest, February to August
+2022.}}
+
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+
+\begin{minipage}{\linewidth}
+
+\includegraphics[width=\linewidth,height=0.6\textheight,keepaspectratio]{../outputs/2_3/dougs_returns/fig3.pdf}
+
+\end{minipage}%
+
+\caption{\label{fig-returns}\textbf{Return movements, February to August
+2022.} \textbf{a.} Weekly total number of returns. Local polynomial
+regression modelling was used to build 95\% confidence intervals.
+\textbf{b.} Distribution of distance truncated to display return
+movements below 700km. \textbf{c.} Median, minimum (min), maximum (max)
+and standard deviation (SD) distance in km, oblast. \textbf{d.} Per cent
+of returns over the total baseline population for individual oblasts
+before the start of the war. \textbf{e.} Per cent of returns over the
+total number of returns for individual oblasts.}
+
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+
+\begin{minipage}{\linewidth}
+
+\includegraphics[width=\linewidth,height=0.8\textheight,keepaspectratio]{../outputs/2_4/mp-data-coverage.pdf}
+
+\end{minipage}%
+
+\caption{\label{fig-data-coverage}\textbf{Correlation between pre-war
+baseline population estimates and mobile phone data coverage at raion
+and oblast levels.} \textbf{a.} Correlation between pre-war baseline
+population, and number of unique mobile phone devices in February 2022
+before the start of the war. \textbf{b.} Correlation between pre-war
+baseline population, and our proposed pre-war population post adjustment
+for estimates in February 2022 before the start of the war. \textbf{c.}
+Penetration rate as the number of unique mobile phone devices over the
+pre-war population. Spatially aggregated population counts from WorlPop
+are used for the pre-war baseline population. Size of dots represent the
+local penetration rate. Local polynomial regression modelling was used
+to build 95\% confidence intervals.}
+
+\end{figure}

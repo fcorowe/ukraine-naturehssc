@@ -1,0 +1,432 @@
+---
+title: "**Producing population-level estimates of internal displacement in Ukraine using mobile phone data**"
+author:
+  - name: Rodgers Iradukunda
+    affil-id: 1
+  - name: Francisco Rowe
+    affil-id: 1
+    attribute:
+      corresponding: true
+  - name: Elisabetta Pietrostefani
+    affil-id: 1
+affiliations: 
+  - id: 1
+    name: Geographic Data Science Lab, Department of Geography and Planning, University of Liverpool, Liverpool, United Kingdom
+abstract: |
+  Nearly 110 million people are forcibly displaced people worldwide. However, estimating the scale and patterns of internally displaced persons in real time, and developing appropriate policy responses, remain hindered by traditional data streams. They are infrequently updated, costly and slow. Mobile phone location data can overcome these limitations, but only represent a population segment. Drawing on an anonymised large-scale, high-frequency dataset of locations from 25 million mobile devices, we propose an approach to leverage mobile phone data and produce population-level estimates of internal displacement. We use this approach to quantify the extent, pace and geographic patterns of internal displacement in Ukraine during the early stages of the Russian invasion in 2022. Our results produce reliable population-level estimates, enabling real-time monitoring of internal displacement at detailed spatio-temporal resolutions. Accurate estimations are crucial to support timely and effective humanitarian and disaster management responses, prioritising resources where they are most needed.
+
+format: 
+  pdf:
+    fontsize: 11pt
+    default-image-extension: tex
+    geometry:
+      - left=2.54cm
+      - right=2.54cm
+    header-includes:
+      \usepackage{lipsum}
+      \usepackage{libertine}
+    keep-tex: true
+    template-partials: 
+      - title.tex
+    include-in-header:
+      text: |
+        \usepackage[noblocks]{authblk}
+        \renewcommand*{\Authsep}{, }
+        \renewcommand*{\Authand}{, }
+        \renewcommand*{\Authands}{, }
+        \renewcommand\Affilfont{\small}
+    fig-pos: 'h'
+number-sections: true
+editor: visual
+csl: nature.csl
+crossref:
+  fig-title: "**Fig.**"    # (default is "Figure")
+  fig-prefix: Fig.   # (default is "Figure")
+  # custom:
+  #   - kind: float
+  #     key: fig
+  #     latex-env: fig
+  #     reference-prefix: Fig.
+  #     space-before-numbering: false
+bibliography: refs.bib
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+<!--#  Main text – up to 5,000 words, excluding abstract, Methods, references and figure legends. -->
+
+<!--#  Abstract - up to 150 words, unreferenced. EP checked -->
+
+<!--#  Display items – up to 8 items (figures and/or tables). -->
+
+<!--#  Article should be divided as follows: -->
+
+<!--#  Introduction (without heading). -->
+
+<!--#  Results (concise, focused account of the findings) -->
+
+<!--#  Discussion -->
+
+<!--#  Methods -->
+
+<!--#  Results and Methods should be divided by topical subheadings; the Discussion does not contain subheadings. -->
+
+<!--# SM need to add links to separate fine. check the word count for the paper and various sections, and references (both in text and reference list) EP DONE 16.08.2024-->
+
+<!--# If we want to add more details to our abstract, we could add the text below in quotation marks. But I thought we need to keep it general to make the outcome broadly applicable and less context specific. "Our results indicate that over 13 million people were displaced from their raion of residence in late August 2022. Raions in Kharkiv and Donetsk record the largest population losses. Kiev City has moved from losing large numbers in the early months of 2022 to become a major centre of population gain, partly driven by return movements. Urban areas act as magnets for people fleeing conflict." -->
+
+\newpage
+
+The forced displacement of individuals, including refugees, asylum-seekers and internally displaced people (IDP), creates considerable humanitarian, social and economic costs [@blattman2010; @unhcr2023].
+Recent estimates indicates that the number of forcibly displaced populations has significantly grown as result of persecution, conflict, violence, human rights violations and disasters [@idmc2024].
+As of June 2023, the United Nations High Commissioner for Refugees (UNHCR) estimated 110 million of forcibly displaced people worldwide, with the number of IDP (62.5 million) accounting for the largest share of these displacements [@UNHCR_mid2023].
+The Russian full-scale invasion of Ukraine is estimated to have created the fastest global displacement crisis, and one of the largest, since the Second World War [@unhcr2023].
+
+Forcibly displaced population data are key to inform operational plans, humanitarian responses and long-term policy making.
+By understanding the scale and locations where people are forcibly fleeing and the extent of their return, government agencies, aid organisations and local community groups can better prioritise and allocate resources and services where they are most needed in the required quantities [@idmc2024].
+Highly granular geographical data tracking population displacements in real time are therefore critical to support these efforts [@rowe2022; @gonzález-leonardo2024a].
+
+Traditional data systems are constrained to render information at such high temporal and geographical resolution and speed.
+Over the years, UNHCR and the Internal Displacement Monitoring Centre (IDMC) have made significant efforts triangulating various data sources to improve and deliver global databases that enable the monitoring and management of forced population displacements [@idmc2024].
+However, they have also identified persistent challenges in the production of reliable estimates of forcibly displaced populations [@sarzin2017stocktaking; @tai2022].Traditional data systems are not regularly updated, costly and characterised by slow data collection and release [@rowe2023].
+Particularly in conflict areas, humanitarian partners and data collectors often face access restrictions due to violence and insecurity preventing data gathering [@UNHCR_mid2023].
+Data streams may also have gaps collecting data on displacement during short-term evacuations or spontaneous movements resulting from conflict and violence [@guideto2019; @drouhot2022].
+The danger and challenging nature of field work in conflict zones can also disrupt continuous engagement in data collection by humanitarian and development agencies [@understa2011; @salehyan2015].
+
+Novel digital footprint data have emerged as a key source of information offering an opportunity to capture human population movements at highly granular geographical and temporal scales [@checchi2013validity; @rowe2023].These data are automatically and continuously generated avoiding exposure of data collectors to hazardous areas and minimising potential data gaps [@guideto2019].
+Mobile phone location data have increasingly been used to monitor population movements during crises, particularly measuring exposure to ambient pollutant exposure [@nyhan2016exposure, @dewulf2016dynamic], transport patterns [@huang2019transport], recreational behaviour [@kim2023mobile], disaster-induced displacement (e.g. flooding and earthquakes) [@lu2016unveiling] and the spread of diseases - notably during the COVID-19 pandemic [@grantz2020use].
+Yet, limited work has been undertaken to estimate the scale and patterns of IDP using mobile phone data.
+Additionally, differences in the access and use of mobile phone technology and applications used to collect location data prevent the production of reliable population-level mobility estimates.
+Most existing work based on mobile phone data has thus constrained to offer rough signals about population movements (e.g. spatial concentration), trends (e.g. increasing) and changes (e.g. low to high) [@rowe2023].
+
+To address these gaps, we propose an approach to produce high-frequency population-level estimates of internal displacement drawing on location data from 25 million unique devices.
+Our first contribution is methodological and illustrates how high-frequency footprint data can enable the generation of population-level estimates of internal displacement correcting for differences in mobile phone-derived and actual population counts, moving beyond providing rough signals.
+Most prior work leveraging on digital footprint data to estimate population displacement relies on social media or call detail records, with location being inferred resulting in reduced precision [@ranjan2012; @zhao2016; @pestre2019].
+We use data collected via GPS technology which provides greater precision data on location [@grantz2020].
+
+Our second contribution is to provide evidence of the scale and spatial patterns of population displacement in Ukraine during the first year of the invasion.
+The Russian full-scale invasion of Ukraine has created the fastest global displacement crisis, and one of the largest, since the Second World War [@unhcr2023].
+Recent estimates suggest that nearly one-third of Ukrainian residents are estimated to have been forced from their homes [@unhcr2023].
+As of 25 September 2023, 3.67 million people were estimated to have been displaced internally within Ukrainian borders [@IOM2022].
+These estimates are based on a random digit dial telephone survey aiming at generating a nationally representative sample of 2,000 individuals at each monthly round [@IOM2022].
+While consistent with high frequency estimates based on Facebook data [@leasure2023nowcasting], these estimates cannot deliver population-level estimates of population displacement for geographical areas, or high-temporal frequency.
+Our approach offers high frequency population displacement estimates to complement data derived from traditional data streams.
+
+# Results
+
+## Estimating the extent of internal population displacement
+
+We first estimate the extent of daily internal population displacement at the oblast and raion level (@fig-popdisplacement).
+We estimate that over 5 million people were internally displaced from their oblast of residence by April 2022 reaching an average of about 10 million in late July and August 2022.
+@fig-popdisplacement reveals a drop in population displacement during mid-June and mid-July, coinciding with a pattern of return displacements primarily to the cities of Kiev and Kharkhiv (see @sec-return).
+In addition to return movements, subsequently higher but fluctuating levels of movement after mid July seem to reflect the shifting dynamics of the armed conflict towards southeastern Ukraine where ware fire intensified during this period [@walker2024].
+
+::: {#fig-popdisplacement layout="[[1], [1]]"}
+![](../outputs/2_1/fig1.jpg)
+
+**Estimated daily number of displaced population. February to August 2022.** The number of displaced people is estimated as the difference between the population in a region for a given day after the start of the war and the population before the war in 2020 - see [@sec-methods2.2].
+:::
+
+Our contribution is to generate geographically granular estimates of internal displacement at the raion level leveraging the high spatial precision of GPS data.
+As anticipated, the levels of raion-level displacement consistently exceeds those of oblast-level displament as they reflect movements that cannot be captured at higher levels of spatial aggregation: raions within the same oblast's boundaries capturing the fact that most displacement tend to occur over short distances.
+Our raion-level estimates indicate a rise and peak of over 17 million displaced people in mid June 2022 following the start of the Russian invasion of Severodonetsk.
+Around 90% of the buildings and infrastructure is estimated to have been destroyed or damaged after the capture of Severodonetsk [@yana2021].
+From mid July, our estimates indicate a rise in population displacement at the oblast level, but such increase is not reflect at the raion level, indicating that the most displacement that took place during this time tended to occur over long distances involving a cross of oblast boundaries (see Fig. S1 in Supplementary Material (SM) displaying distance distributions).
+
+Our findings are consistent with existing estimates.
+We compare our oblast-level displacement estimates with existing estimates derived from an United Nations - International Organization for Migration (IOM) survey [@IOM2022] and Facebook data [@leasure2023nowcasting] (see @sec-methods2.2, Tab. S1 and Fig. S2 in SM).
+The shape of the temporal evolution of population displacement is remarkably consistent.
+Though, we identify some discrepancies.
+Our estimates tend to be higher than those produced by Leasure et al. by approximately 250 thousand people across the time series.
+The difference can be explained by Leasure et al.'s estimates are affected by power outages in the Donetsk and Luhansk regions resulting in zero or small numbers for various dates [@rowe2022b; @leasure2023nowcasting] (see Fig. S3 in SM).
+Similarly, our oblast-level estimates are noticable greater than the IOM figures in June and August.
+We assume that this is because our estimates include data from Crimea, and there was significant movement from and to Crimea to Russian-occupied Ukrainian territory and Russia during these months [@walker2024].
+This is as Russia started a "volunteer mobilisation" and deployed new troops and logistics to support an a frontline extending from Zaporizhzhia to Kherson, along the Dnieper River [@walker2024].
+If we exclude Crimea, our estimates are much closer to IOM and Leasure et al.'s estimates (see Tab. S1 in [SM](https://github.com/fcorowe/ukraine-pop-displacement/blob/main/manuscript/quarto-file-supplementary.pdf)).
+
+<!-- Comment by EP: There is other data missing in Leasure et al estimates. Would be good to ask them why. -->
+
+## Identifying the main origins and destinations {#sec-odm}
+
+We then examine the net balance of internal population displacements resulting inflows minus outflows, to identify the main areas losing and gaining population through these displacements.
+As expected, [@fig-heatmaps]a reveals that Kiev City was the main area losing population at the start of the war between late February and early May before recording large positive net balances of over 2 million people.
+These gains seem to echo large-scale return population movements as Russian troops withdrew from the outskirts of Kiev City and focused on the eastern and southern regions of Ukraine, particularly Donetsk, Kharkiv, Crimea and Luhansk ([@fig-heatmaps]b).
+Reflecting the geographic concentration of military ground forces, these frontline eastern and southern regions registered a consistent pattern of population losses between March and August.
+Population losses are particularly prominent in Donetsk where the estimated losses exceeded 2 million people in late July and early August 2022.
+To a lesser extent, Odessa also displays a negative albeit moderate balance of population displacements during the early months of the invasion as Russia had a naval blockade on Ukrainian ports.
+
+::: {#fig-heatmaps layout="[[1], [1]]"}
+![](../outputs/2_2/fig2_paper.pdf){#fig-weeklyheatmap height="50%"}
+
+**Net migration count by oblast and raions, February to August 2022.** **a.** Weekly median net migration by oblast.
+**b.** Monthly median net migration across raions.
+**c.** Top ten raions with the largest cumulative net negative (in blue) and positive (in red) migration balance organised from the largest to the smallest.
+**d.** Changes in the share of estimated population across the urban-rural hierarchy.
+:::
+
+At the same time, [@fig-heatmaps]a reveals that western, central and central-south areas tended to gain population during the early months of the invasion between February and June 2022.
+These areas include oblasts close to the border with Poland, Slovakia, Hungary, Romania and Moldova, such as Ivano-Frankivs'k, Vinnytsya, Volyn and Zakarpattia probably serving as transit centres for international crossings and humanitarian assistance.
+Kirovohrad also shows considerable positive population balances over the early months of the war, most likely receiving population from frontline areas in eastern parts of Ukraine.
+[@fig-heatmaps]a shows that most of these areas have tended to experience population losses as Kiev City and Odessa record positive population balances from late July.
+
+These aggregate patterns of population displacement conceal the local concentration of net population losses and gains across raions.
+[@fig-heatmaps]c reports the net balance of population displacements over time for the ten raions with the largest cumulative losses and gains between February and August 2022.
+It reveals that Kharkiv remained the raion with the largest cumulative loss of population since the start of the war at least until August 2022, but it reported positive balances as Ukrainian forces launched a counteroffensive and liberated major settlements in the Kharkiv oblast in late July and August 2022.
+The oblast of Donest'k seems to congregate the raions with the greatest population losses, reflecting the concentration of frontline activity in raions, such as Donets'ka, Mariupol's'ka and Makivs'ka.
+
+On the other hand, [@fig-heatmaps]c reveals that raions within the oblasts of Dnipropetrovsk, Kiev City and Donetsk recorded the largest cumulative net migration gains at times when these oblasts recorded moderate overall net migration losses ([@fig-heatmaps]a).
+The raions of Dniprodzerzhyns'ka, Zhotovods'ka and Nikopol's'ka all registered large cumulative population gains through net migration from February to August 2022 despite systematic moderate overall negative migration balances in the oblast of Dnipropetrovs'k.
+Similarly, the raion of lasynuvats'ka in Donestk recorded a large cumulative net migration gain despite this being the oblast with the largest negative migration balances.
+These results suggest that people tended to move locally to neighbouring areas, or were unable to afford moving to more distant locations in western Ukraine (see Fig. S1).
+
+Additionally, mapping the patterns of net migration ([@fig-heatmaps]b and [@fig-heatmaps]d) reveals the increasing prevalence of population loss through net migration in Ukraine, particularly in less populated areas.
+In early weeks of the invasion in February, negative net migration balances concentrated in urban centres, especially Kiev and Khakiv.
+As the conflict evolved, net migration losses seem to have expanded to most of the country prominently reducing the relative national share of population in very low density and low density rural areas ([@fig-heatmaps]d).
+These reductions in sparsely populous areas appear to have been mirrored by a growing national share of population in urban centres, with Kiev and Odessa acting as the major centres of population attraction in August ([@fig-heatmaps]d).
+
+## Increasing and geographically focused rate of returns but lower than officially estimated {#sec-return}
+
+Understanding the scale and pace of return movement to residential areas in conflict zones after a period of displacement is also important to shape and support humanitarian assistance, successful reintegration, mental health and community rebuilding programmes [@iom2023-return].
+Understanding return movements enables more efficient resource allocation prioritising areas for infrastructure reconstruction and service delivery [@iom2023-return].
+IOM estimated that 6 million people had returned to their usual place of residence in Ukraine by August 23 2022 following a two-week period elsewhere in the country [@UNHCR_mid2023].
+At the time of writing, the most recent IOM estimate puts this figure at 4.7 million returnees in April 11 2024, 14.2 per cent of whom returned from abroad [@iom2024-return].
+These estimates are derived from a survey of 20 thousand people, with follow-ups to 1,638 individuals identified as returnees [@iom2024-return].
+The proportion of returnees for each oblast is computed and multiplied by the total population in Ukraine to derive return estimates.
+Returnees are identified as those respondents who spent a two-week period away from their place of residence.
+
+::: {#fig-returns layout="[[1], [1]]"}
+![](../outputs/2_3/dougs_returns/fig3.pdf){#fig-return_composite height="50%"}
+
+**Return movements, February to August 2022.** **a.** Weekly total number of returns.
+Local polynomial regression modelling was used to build 95% confidence intervals.
+**b.** Distribution of distance truncated to display return movements below 700km.
+**c.** Median, minimum (min), maximum (max) and standard deviation (SD) distance in km, oblast.
+**d.** Per cent of returns over the total baseline population for individual oblasts before the start of the war.
+**e.** Per cent of returns over the total number of returns for individual oblasts.
+:::
+
+Using our methodology (see @sec-methods2.2), we generate estimates and expand this evidence providing information on the spatial patterns, distance and pace of return movements ([@fig-returns]a-e).
+Our estimates indicate that just over 2 million people had returned to their place of residence before February 24 during the week commencing August 22, 2022 ([@fig-returns]a).
+Our estimates also showed considerable fluctuations over time, reflecting that some of displacements and returns may be temporary.
+Some people may return to their home location after spending a short period of time elsewhere.
+Some may return to check on close relatives and friends, examine local livability and recover belongings, and then leave.
+The fluctuations observed in our estimates also reflect the fact that we are unable to follow the same mobile phone devices for the entire period of analysis.
+We observe some individual returns to the same location, but are unable to identify their location in subsequent periods.
+Crimea is a good example as we could only identify returns until the first week of April but not thereafter ([@fig-returns]d-e).
+
+[@fig-returns]d-e reveal a differentiated rate of return movements across oblasts.
+Dnipropetrovs'k and Kiev City display higher proportions of return movements relative to their populations before the start of the armed conflict, and to the total weekly number of returns across Ukraine.
+L'viv and Mykolaiv record high rates of return movement likely reflecting their role as transit points, food, temporary shelter and accommodation centres for refugees, IDP and troops [@gonzález-leonardo2024b].
+Kherson and Crimea register the lowest number of returns.
+As indicated above, no returns were recorded for Crimea after April 2022, and Kherson remained under Russian occupation during our period of analysis.
+
+Return movements tend to occur over relatively short distances ([@fig-returns]b-c).
+The median distance of return moves between oblasts is less than 100km suggesting that most IDP tend to stay relatively close to their home location.
+Global estimates indicate that a median distance of less than 100km for internal migration moves is common [@stillwell2016].
+However, a wide variation exists as a function of the place of residence.
+IDP seem to be willing to travel longer distances to return Chernivhiv, Kiev City and Zaporizhia than to Luhans'k, Chernivtsi and Zakarpattia.
+Chernivhiv and Kiev City recorded large flows of return movements as Russian troops withdrew from northern areas of Ukraine and intensifies their war effort on eastern and southern parts of the country.
+
+# Discussion
+
+We developed an approach to produce highly granular temporal and spatial population-level estimates to monitor the extent and geographic patterns of population displacement in disaster areas drawing on a large dataset of GPS location data from mobile phone devices.
+Highly granular data of internal displacement is essential for real-time monitoring to support disaster relief and management efforts.
+Traditional data streams are limited in their ability to generate such granular information in real time during times of conflict or natural disasters.
+Focusing on the unfolding invasion of Ukraine, we estimated that an increasing number of people were displaced from their place of residence, with an average of 11 million people being displaced from their Oblast of residence and over 15 million at the raion level at the start of the Battle of Bakhmut in early August 2022.
+
+We provided evidence indicating that urban centres were the predominant locations of population displacement during the early months of the invasion, with Kiev as the primary origin reporting net migration losses of approximately 2 million.
+As the conflict progressed in 2022, we showed widespread population losses through internal displacements.
+Proportionally the share of population in low density rural areas has reduced mirroring a larger share of population in urban centres.
+We showed a systematic increase in the number of return movements to Kiev City following the withdrawal of Russian forces from the northern and western front of the city, with frontline areas continuing to lose population throughout the conflict.
+
+Our work complements existing efforts to generate rapid response estimates.
+To estimate population displacement in Ukraine, the IOM designed a random digit dial telephone survey to produce a nationally representative sample of 2,000 individuals during each monthly round [@IOM2022r1].
+However, this method of data collection is unable to: (i) generate population level estimates to make inferences of the geographic patterns of population displacement; (ii) offer temporally granular frequency estimates (e.g. daily or weekly) to monitor rapidly changing population dynamics; or, (iii) produce high spatial resolution counts to identify areas of humanitarian assistance with high precision [@leasure2023nowcasting].
+Prior work has explored the use of location data from mobile and social media data to address these issues [@graells-garrido2021; @gonzález-leonardo2024].
+Yet these efforts have been restricted to provide rough signals of population movements indicating the direction of trends, spatial patterns and changes of population flows over time [@rowe2023].
+
+By using pre-conflict population data, we contributed to an approach that is capable to adjust location data from mobile phone users, moving away from offering rough signals, to provide estimates of the extent of population movements.
+Our approach also has the capacity to provide real-time monitoring of population displacement at highly temporally and spatially adaptable resolutions.
+Our approach can thus complement existing data resources aiming to provide a national-scale estimate of population movement.
+In fact, our estimates aggregated at the national level were consistent with those derived from the IOM telephone surveys [@IOM2022r1] and social media data [@leasure2023nowcasting].
+The triangulation of estimates across these sources helps build confidence in the official UN estimates, but also on estimates leveraging innovative data.
+
+We generated population-level estimates using smartphone location data.
+However, validating the resulting spatially granular estimates remains a significant challenge.
+Normally no comparable estimates exist to evaluate the extent to which they capture the facts on the ground.
+That is the reason why they are produced in the first place.
+Future efforts could thus concentrate on making available a repository of high quality datasets, such as data from comprehensive population registry or administrative sources that can be used to assess the accuracy of population-level estimates derived from digital trace data, such as smartphone data.
+
+We are unable to characterise the population being displaced or their underpinning reasons using smartphone data.
+As most digitally generated data, these data only offer location-time information They do not provide socio-demographic information about users or their motivations.
+As such, we cannot identify the socio-demographic profile of displaced individuals or why they move; yet, this information is critical to deliver an appropriate humanitarian response.
+To tackle this, future work could assess the integration of area-level data of the resident population with highly granular displacement estimates derived from GPS location data to more accurately capture the socio-demographic profile of displaced communities, and surveys collecting information on why people move.
+
+We cannot discern between permanent and semi-permanent returns.
+We can infer returns if individuals are back to their place of residence recorded before the start of the war.
+However, the records of individual mobile devices offer a rather irregular longitudinal sequence of locations to confidently determine the time they remained in their place of residence observed before the start of the war.
+Future work could seek to secure a data over a longer time frame which may provide a larger set of locations over time to distinguish between permanent and semi-permanent returns.
+
+# Methods
+
+## Data sources {#sec-data-sources}
+
+**Global Positioning System (GPS) location data.** The primary source consists of GPS location data from 25 million unique mobile phone devices.
+The data include daily GPS locations (longitude and latitude) in Ukraine, their accuracy and time stamps from January 1st 2022 to August 31st 2022.
+Data from digital mobile phone applications are known to contain biases as they typically represent the behaviour of a segment of the population [@rowe2023].
+To mitigate any potential biases from the use of information from a single source, we use data collected from a range of mobile applications comprising a variety of users and purposes.
+Ethical considerations prevent us from identifying these applications.
+The data were obtained from Echo Analytics (previously PickWell).
+Supplementary Table S1 lists the variables in the original dataset.
+
+We process the data to identify unique devices with locations recorded before (January 1 to February 24, 2022) and after (February 25 to August 31, 2022) the start of the escalation of the Ukraine-Russia conflict.
+We identify 17 million devices (approximately 70% of the total) with locations before the February 24, and 13 million (approximately 55% of the total) with recorded locations after the escalation of the conflict.
+We identify 6 million devices with recorded location information for both before and after the full-scale invasion on February 24, 2022.
+
+To further analyse the data, we apply three main procedures.
+First, we apply a point-to-polygon spatial join to assign latitude and longitude coordinates to administrative boundaries (raions and oblasts) and settlement area type as defined by the Global Human Settlement Layer (GHSL) - see description below in Geographic data.
+Second, we convert UNIX time stamps into local Ukrainian date and time.
+Third, we infer individual home locations for each mobile phone device.
+For this, we follow the UN guidelines on official statistics using mobile phone data [@Araietal2022], and define home location as the place where a mobile phone is recorded most of the time during night (i.e. between 7pm and 5.59am).
+We calculated the number of days a user's mobile phone device was detected in the same location during these nighttime hours.
+We consider the location where a user's mobile phone device was recorded for more than 50% of their time as their place of usual residence[@Araietal2022].
+
+To provide a sense of the representativeness of the mobile phone data used and our resulting population-level estimates, we performed correlation analysis at the oblast and raion levels.
+We analysed the correlation (1) between the size of our pre-war baseline population and number of unique mobile phone devices; and, (2) between the size of the pre-war baseline population and our proposed population-level estimates.
+We included the mobile phone penetration rate representing the size of each dot on the scatter plots, to provide a sense of population coverage in each area.
+Correlation coefficients over 0.76 indicate a high degree of representativeness of our "raw" unique mobile devices at both the oblast and raion levels.
+Correlation coefficients of .9 and 1 reflect an even high degree of representativeness of our proposed population-level estimates and pre-war population data.
+For oblasts, the correlation is slightly lower because we used census population data for our correlation analysis.
+For raions, we used WorldPop data as explained below because census population data were not available.
+
+*\[INSERT FIGURE\]*
+
+**Baseline population data.** We use $100m^{2}$ gridded population data to establish the baseline population before the conflict in Ukraine in 2020 [@worldpopukraine].
+We utilise unconstrained population estimates from [worldpop.org](https://www.worldpop.org/).
+These were the most up-to-date population estimates available for our analysis.
+We spatially aggregate the WorldPop population counts to create baseline population datasets at the raion and oblast levels.
+These population estimates are then used to derive population-level estimates of internal displacement, as described below.
+
+**Refugee data.** We use United Nations High Commissioner for Refugees (UNHCR) daily counts of people entering and leaving Ukraine [@OPD].
+We accessed these data from an archived version of the UNHCR website available via [The Internet Archive](https://web.archive.org/).
+These data included daily cross-border movement records from the start of the full-scale invasion in Ukraine until August 16 2022.
+We calculate a cumulative net count by subtracting the number of people entering Ukraine from those leaving the country.
+We use this count to more accurately estimate the number of internally displaced people in Ukraine by discounting the number of people who moved overseas from the baseline population.
+
+**Geographic data.** We use data from two sources.
+First, we use geopackages containing the administrative boundaries of Ukraine, particularly raions and oblasts.
+We draw on geospatial vector data from the United Nations Office for the Coordination of Humanitarian Affairs (OCHA) [Humanitarian Data Exchange (HDX) data portal](https://data.humdata.org/dataset?) and [Global Administrative Areas](https://gadm.org/) (GADM) [@GADM] We first spatially join our GPS mobility data with GADM raion and oblast boundaries.
+GADM boundaries contain 629 raions and 26 oblasts.
+We then aggregate these raions based on HDX raion boundaries which correspond to the offically recognised administrative boundaries in Ukraine.
+
+We also use the degree of urbanisation classification from the [GHSL](https://human-settlement.emergency.copernicus.eu/) to determine the type of settlement areas of IDP, both origins and destinations.
+We reclassify the seven original categories to identify three types of areas: urban (dense urban cluster and urban centre), suburban or peri-urban (suburban and semi-dense urban cluster), and rural (very low density rural, low density rural and rural cluster) [@florczyk2019ghsl].
+
+## Computation of population-level displacement estimates {#sec-methods2.2}
+
+**Estimating Internal Displacement.** We obtain population-level estimates of internal displacement by correcting population counts derived from the identified home location based on our smartphone GPS data, to make them representative of the overall population.
+That is, we correct mobile phone-derived population estimates to account for differences in the use of mobile phone technology across locations in Ukraine and over time.
+To this end, we adapted a deterministic model proposed by Leasure and colleagues [@leasure2023nowcasting].
+Intuitively the approach involves first establishing our baseline population; that is the pre-war population of Ukraine.
+We use population data from WorldPop for 2020.
+Second, we identify the baseline number of mobile phone users in Ukraine before the start of the full-scale invasion by aggregating the number of unique devices in each home location based on our GPS mobile phone data.
+Third, these two sets of baseline estimates are used to compute the baseline mobile phone penetration rate in each location $i$ before the start of the full-scale invasion ($t=0$).
+Formally, this rate can be expressed as:
+
+$$ \psi_{i,t=0} = \frac {S_{i,t=0}} {N_{i,t=0}}$$ {#eq-equation1}
+
+where: $S$ is the baseline median daily active mobile phone users between January 1, 2022 to February 24, 2022; $N$ is the baseline total population in 2020 obtained from WorldPop.
+
+Next, we estimate the present population $N$ in location $i$ at a given point in time $t$ from our GPS mobile phone data adjusting for rate of mobile phone penetration.
+We do this by dividing the current median daily active mobile phone users $S$ at location $i$ and time $t$ over the baseline smartphone penetration rate $\psi$ at location $i$, assuming constant penetration rate since before the conflict:
+
+$$ N_{i,t} = \frac {S_{i,t}} {\psi_{i}} $$ {#eq-equation2}
+
+We introduce a scaling factor ($\theta$) to account for potential changes in mobile phone penetration rate over time as people leave Ukraine and the local population shrinks.
+For this, we use daily population counts of refugees from UNHCR and compute the net balance of people leaving Ukraine which is denoted as $R$.
+We compute the scaling factor at time $t$ using:
+
+$$ \theta_{t} = \frac{\sum_{i=1}^I N_{i,t=0} - R_{t}}{\sum_{i=1}^I N_{i,t}} $$ {#eq-equation3}
+
+We use this scaling factor to compute our adjusted present population ($\hat{N}$) multiplying the present population $N$ obtained from @eq-equation2 and $\theta$:
+
+$$ \hat{N}_{i,t} = \theta_{t} N_{i,t} $$ {#eq-equation4}
+
+Using these population estimates, we can estimate changes in local population across Ukraine over time.
+We can do this by subtracting our adjusted current population estimates from the baseline population:
+
+$$ \Delta_{i,t} = \hat{N}_{i,t} - N_{i,t=0}$$ {#eq-equation5}
+
+where: $\Delta_{i,t}$ is the difference in population in location $i$ at time $t$.
+For this difference, negative scores indicate a local population loss due to internal population displacement, relative to the baseline pre-war population.
+Similarly, positive scores indicate a local population gain due to internal population displacement.
+
+**Validation.** We assess the accuracy of our estimates of population displacement.
+We measure the strength of the correspondence between our set of mobile phone-based estimates *versus* the survey-based estimates produced by the IOM [@IOM2022], and the Facebook-based estimates produced by Leasure and colleagues [@leasure2023nowcasting].
+We do not anticipate a perfect linear relationship as differences exist in the data source and methodologies to produce the estimates.
+However, we do expect a high degree of correlation indicating a high degree of temporal correspondence between estimates.
+We compared against published IOM estimates at the national and regional levels during the most of our analysis, and also oblast-level estimates published by Leasure and colleagues.
+Unfortunately more comparable spatially granular estimates at the raion level were not available for our period of analysis.
+**Fig. XX** display a set of Pearson correlation coefficients, scatter plots and temporal relationships between these and our estimates.
+The results reveal a high degree of geographic and temporal correspondence between our estimates and those produced by IOM and Leasure and colleagues across the set of metrics.
+
+## Displacement metrics {#sec-metrics}
+
+**Net balance of displacement.** To identify areas of high internal population displacement, we analyse temporal changes in the net balance of internal displacement.
+We compute the weekly average net balance of internal displacements ($NET$) as the subtraction of the number of people arriving ($IN$) minus the number of people leaving an area ($OUT$).
+Positive scores indicate a net balance population gain due to internal displacement, while negative scores denote a net balance population loss.
+The net balance of internal displacement is computed as:
+
+$$ NET_{i,t} = {IN_{i,t}} - {OUT_{i,t}} $$ {#eq-equation6}
+
+**Population change across the urban-rural hierarchy.** We analyse changes in population across the urban-rural hierarchy.
+We hypothesise that dense urban areas have attracted a disproportionate number of internally displaced people as they tend to serve as centres of protective infrastructure and services for civilians.
+At the same time, we expect decreases in population due to internal displacement in rural areas.
+To determine the extent of population changes, we compute the percentage change in population in individual areas, relative to the baseline population (@eq-equation7).
+For this, we spatially aggregated our internal displacement estimates at raion to settlement areas based on the GHSL degree of urbanisation classification described in Section (@sec-data-sources).
+
+$$ percent_{i,t} = \frac {\hat{N}_{i,t}} {N_{i,t0}} * 100 $$ {#eq-equation7}
+
+**Estimating returns.** We estimate the number of people who returned to their usual place of residence before the start of the full-scale invasion after a move somewhere else in the country.
+We produce estimates at the raion and oblast level.
+We implemented and compared two different approaches to estimate the number of returnees.
+These approaches are based on the methods used by: (1) the IOM [@iom2024-return]; and, (2) Leasure and team [@leasure2023nowcasting].
+
+Similar to the former, we defined returns as those individual devices which are recorded away for a period of at least two weeks and subsequently in the same area identified as home location before the start of the full-scale invasion.
+For individual areas, we computed the relative proportion of return movements dividing the number of returns relative to the total number of devices in a given home location.
+These proportions are then multiplied by the pre-war baseline population to produce population-level estimates of returnees.
+
+Similar to Leasure and team, we defined returns as those individual devices which are recorded away for one or more days and subsequently in the same area identified as home location before the start of the full-scale invasion.
+Following the same rationale explained for deriving our population-level estimates of population displacement above, we divided the count of returns by the pre-war smartphone penetration rate for each area.
+Acknowledging that pre- and post-war smartphone penetration rates might differ as people leaving Ukraine, we adjusted our estimates with scaling factors that accounted for refugees who had left the country using @eq-equation3 and @eq-equation4.
+
+We compared both sets of estimates and considered that the second approach provides more reasonable estimates (see Fig. S5 in SM).
+It produces population-level return estimates displaying an increasing trend, within the range of 1 million in February 2022 and 4 million July 2022, whereas the IOM-like approach generates estimates suggesting a decline in the number of returns from over 2 million to around 500 thousand.
+We consider a decline in the number of the number of IDP to be unrealistic.
+As Russian troops withdrew from northern Ukraine, we have visual and anecdotal evidence to suggest that people have tended to return to Kiev and northern areas in June and July 2022.
+
+**Distance of displacement.** We estimated how far people moved from their home location.
+Human mobility research indicates that most people move locally to neighbouring areas.
+We sought to explore if a similar process occurs for forced movements.
+To this end, we measured the distance distribution for return moves, computing the distance between the home location and destination before a return move is detected at the raion level.
+The median distance travelled is often used for comparative analysis [@stillwell2016].
+Additionally, we measure the distance for all moves computing between the home location, each temporary stop and location before a return move is identified, to assess difference between the overall distance distribution and that of return moves.
+We identified that the set of distances are quite similar suggesting that people tend to directly move to their "final" destination without long periods of overnight stay in intermediate stops (see Fig. S1).
+We measured the Haversine distance in kilometres based on centriod coordinates indicating the angular distance between two points on the surface of a sphere.
+
+# Data availability
+
+The main dataset for our analysis comprises mobile phone GPS data.
+These data were obtained from Echo Analytics (previously Pickwell).
+They cannot be shared due to the terms of data sharing and use agreement.
+The data are available for purchase from Echo Analytics.
+The other data used in our analysis are openly available online for download: WorldPop data can be obtained from <https://www.worldpop.org>; UNHCR data on refugees can be retrieved from <https://data.unhcr.org/en/situations/ukraine>; administrative boundaries for Ukraine can be downloaded from <https://data.humdata.org> and <https://gadm.org>; and, GHSL can be accessed via <https://human-settlement.emergency.copernicus.eu>.
+
+# Code availability
+
+The code, and relevant description to replicate the analysis and results reported in this article can be found in an open-access Github repository registered on the Open Science Framework with DOI \[To be added for publication\].
+We adopted an open and reproducible research approach based on the use of open software.
+We used the R language in RStudio and followed best practices in geographic data science [@arribas-bel2021].
+
+# References
