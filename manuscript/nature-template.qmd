@@ -76,7 +76,7 @@ Additionally, differences in the access and use of mobile phone technology and a
 Most existing work based on mobile phone data has thus constrained to offer rough signals about population movements (e.g. spatial concentration), trends (e.g. increasing) and changes (e.g. low to high) [@rowe2023].
 For example, a recent study [@shibuya2024] used GPS data to offer a granular representation of the geographic and temporal patterns and trends in population displacement in Ukraine, but the reported estimates correspond changes in the number of unique mobile phone devices.
 They do not represent population-level figures.
-Estimates need to be adjusted for biases to make them representative of the full population.
+Estimates need to be adjusted for biases to make them representative of the full population [@cabrera2025].
 
 To address these gaps, we propose an approach to produce high-frequency population-level estimates of internal displacement drawing on location data from 25 million unique devices.
 Our approach adapts Leasure's et al. approach [@leasure2023nowcasting] of bias data correction to GPS human mobility data.
@@ -444,7 +444,7 @@ The main dataset for our analysis comprises GPS location data from mobile phone 
 These data are GDPR compliant and were legally obtained from a data aggregator.
 We cannot identify the data aggregator or share the data in compliance of the terms of data sharing and use, sign of nondisclosure agreement and a commercial contract.
 We would be happy to share details upon contact, and if the data provider agrees on sharing their contact details with specific potential users.
-We provide a synthetic dataset on a Github repository \[*URL to be included*\], to illustrate the reproducibility of our methodology.
+We provide all the required aggregate process data on a Github repository hosted via Open Science Framework \[[https://doi.org/10.17605/osf.io/u7y3j](https://doi.org/10.17605/OSF.IO/U7Y3J)\], to reproduce the results reported in the paper.
 The other data used in our analysis are openly available online for download: WorldPop data can be obtained from <https://www.worldpop.org>; UNHCR data on refugees can be retrieved from <https://data.unhcr.org/en/situations/ukraine>; administrative boundaries for Ukraine can be downloaded from <https://data.humdata.org> and <https://gadm.org>; and, GHSL can be accessed via <https://human-settlement.emergency.copernicus.eu>.
 
 # Funding Declaration
@@ -454,22 +454,43 @@ We gratefully acknowledge funding from Research England through the following pr
 # Ethical approval
 
 This article does not contain any studies with human participants performed by any of the authors.
-Ethics approval for the use of anonymised GPS mobile phone data was obtained from the Ethics Committee of \[*name of institution*\].
-To protect individual privacy, all analyses were conducted on aggregated data, and robust data protection measures were employed to mitigate risks of re-identification.
+Ethics approval for the use of anonymised GPS mobile phone data was obtained from the Ethics Committee of The University of Liverpool - Approval number: 15585 dated 22/01/2025.
+The approval covers the use of mobile phone data to generate dynamic population displacement estimates in conflict regions.
+To protect individual privacy, all analyses were conducted on aggregated data, and robust data protection measures were employed to mitigate risks of re-identification, in accordance with the EU General Data Protection Regulation (GDPR).
 
 # Informed consent
 
-Informed consent was given by the data service providers and data collectors when users signed up for the use of a service.
-Users adhere to the terms of use, which includes a clause on the voluntary sharing of their location live location for commercial and research purposes.
-Users can deactive this function at any point.
+Informed consent was given by the data service providers at the point of download of the respective data they used to share their location.
+Users adhere to the terms of use, which includes a clause on the voluntary sharing of their location live location for commercial and research purposes at this point.
+Users can deactivate this function when they desire.
 
 # Author contributions
 
-\[*To ensure a blind review process as per journal guidelines, this information will be included at a later stage.*\]
+F.R.
+and E.P.
+devised the project and developed the main conceptual ideas.
+F.R.
+R.I.
+and E.P.
+discussed the technical details of the study.
+E.P.
+secured the data.
+F.R., R.I.
+and E.P.
+performed the numerical calculations and data visualisation.
+F.R., R.I.
+and E.P.
+wrote the first draft and discussed the results.
+F.R.
+and E.P.
+revised the manuscript.
+F.R., R.I.
+and E.P.
+approved the final version. 
 
 # Code availability
 
-The code, and relevant description to replicate the analysis and results reported in this article can be found in an open-access Github repository registered on the Open Science Framework with DOI \[*To be added for publication*\].
+The code, and relevant description to replicate the analysis and results reported in this article can be found in an open-access Github repository registered on the Open Science Framework with DOI \[[https://doi.org/10.17605/osf.io/u7y3j](https://doi.org/10.17605/OSF.IO/U7Y3J)\].
 We adopted an open and reproducible research approach based on the use of open software.
 We used the R language in RStudio and followed best practices in geographic data science [@arribas-bel2021].
 

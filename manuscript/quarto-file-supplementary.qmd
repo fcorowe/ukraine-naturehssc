@@ -1,16 +1,15 @@
 ---
 title: "**Supplementary Material: Producing population-level estimates of internal displacement in Ukraine using GPS mobile phone data**"
 author:
-  - name: Anonymised for peer review
-# - name: Rodgers Iradukunda
-#     affil-id: 1
-#   - name: Francisco Rowe
-#     affil-id: 1
-#   - name: Elisabetta Pietrostefani
-#     affil-id: 1
-# affiliations: 
-#   - id: 1
-#     name: Geographic Data Science Lab, Department of Geography and Planning, University of Liverpool, Liverpool, United Kingdom
+  - name: Rodgers Iradukunda
+    affil-id: 1
+  - name: Francisco Rowe
+    affil-id: 1
+  - name: Elisabetta Pietrostefani
+    affil-id: 1
+affiliations:
+  - id: 1
+    name: Geographic Data Science Lab, Department of Geography and Planning, University of Liverpool, Liverpool, United Kingdom
 format: 
   pdf:
     fontsize: 11pt
